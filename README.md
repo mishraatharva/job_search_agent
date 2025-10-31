@@ -28,5 +28,6 @@ Built using **LangChain** and **Streamlit**, this project uses AI agents to:
 
 You can watch a short demo of the app in action below 👇
 
-<video src="output_images\job_search_assistent.mp4" width="700" controls autoplay loop muted></video>
+<!-- <video src="output_images\job_search_assistent.mp4" width="700" controls autoplay loop muted></video> -->
 
+🎬 [Watch Demo Video](https://github.com/mishraatharva/job_search_agent/tree/main/output_images/job_search_assistant.mp4)
