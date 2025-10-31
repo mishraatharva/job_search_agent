@@ -48,6 +48,9 @@ class JobScraper:
     
     def search_jobs(self, keywords, location, platform="Indeed", count=5):
         """Search for jobs across selected platforms."""
+        print("------------------------------------------------------")
+        print("inside search_jobs of JobScraper")
+        print("-------------------------------------------------------")
         if platform == "LinkedIn":
             return self.search_linkedin(keywords, location, count)
         elif platform == "Indeed":

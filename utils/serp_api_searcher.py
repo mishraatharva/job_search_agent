@@ -7,6 +7,9 @@ class SerpApiSearcher:
     """Search for real jobs using SerpAPI's Google Jobs search."""
     
     def search_jobs(self, keywords, location, platform=None, count=5, days_ago=7):
+        print("------------------------------------------------------")
+        print("inside search_jobs of SerpApiSearcher")
+        print("-------------------------------------------------------")
         """
         Search for jobs using SerpAPI's Google Jobs API.
         
@@ -20,6 +23,7 @@ class SerpApiSearcher:
         Returns:
             list: List of job dictionaries with details and direct links
         """
+        print(SERPAPI_API_KEY)
         if not SERPAPI_API_KEY:
             print("SerpAPI key not configured. Returning empty results.")
             return []

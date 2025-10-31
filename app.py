@@ -430,25 +430,13 @@ with tabs[0]:
 # Tab 2: Job Search
 with tabs[1]:
     st.header("Job Search")
-    
-    # Common job titles and locations
-    common_job_titles = [
-        "Data Scientist", "Software Engineer", "Product Manager", "Data Analyst",
-        "Machine Learning Engineer", "Frontend Developer", "Backend Developer",
-        "Full Stack Developer", "DevOps Engineer", "UX Designer", "AI Engineer",
-        "Cloud Architect", "Database Administrator", "Project Manager", "Business Analyst",
-        "Java Developer", "Python Developer", "React Developer", "Android Developer",
-        "iOS Developer", "Node.js Developer", "Data Engineer", "Blockchain Developer",
-        "Cybersecurity Analyst", "Quality Assurance Engineer"
-    ]
-    
     locations = [
-        "Remote",
-        "New York, NY", "San Francisco, CA", "Seattle, WA", "Austin, TX",
-        "Boston, MA", "Chicago, IL", "Los Angeles, CA", "Atlanta, GA", "Denver, CO",
-        "Bangalore, India", "Hyderabad, India", "Mumbai, India", "Delhi, India",
-        "Pune, India", "Chennai, India", "London, UK", "Berlin, Germany", "Toronto, Canada"
-    ]
+            "Remote",
+            "New York, NY", "San Francisco, CA", "Seattle, WA", "Austin, TX",
+            "Boston, MA", "Chicago, IL", "Los Angeles, CA", "Atlanta, GA", "Denver, CO",
+            "Bangalore, India", "Hyderabad, India", "Mumbai, India", "Delhi, India",
+            "Pune, India", "Chennai, India", "London, UK", "Berlin, Germany", "Toronto, Canada"
+               ]
     
     # Create search tabs
     search_tabs = st.tabs(["📄 Resume-Based Search", "🔍 Custom Search"])
@@ -568,6 +556,24 @@ with tabs[1]:
     
     # Custom Search Tab
     with search_tabs[1]:
+         # Common job titles and locations
+        common_job_titles = [
+            "Data Scientist", "Software Engineer", "Product Manager", "Data Analyst",
+            "Machine Learning Engineer", "Frontend Developer", "Backend Developer",
+            "Full Stack Developer", "DevOps Engineer", "UX Designer", "AI Engineer",
+            "Cloud Architect", "Database Administrator", "Project Manager", "Business Analyst",
+            "Java Developer", "Python Developer", "React Developer", "Android Developer",
+            "iOS Developer", "Node.js Developer", "Data Engineer", "Blockchain Developer",
+            "Cybersecurity Analyst", "Quality Assurance Engineer"
+        ]
+    
+        locations = [
+            "Remote",
+            "New York, NY", "San Francisco, CA", "Seattle, WA", "Austin, TX",
+            "Boston, MA", "Chicago, IL", "Los Angeles, CA", "Atlanta, GA", "Denver, CO",
+            "Bangalore, India", "Hyderabad, India", "Mumbai, India", "Delhi, India",
+            "Pune, India", "Chennai, India", "London, UK", "Berlin, Germany", "Toronto, Canada"
+               ]
         # Job search form
         with st.form("job_search_form"):
             st.subheader("Search Criteria")
@@ -964,6 +970,7 @@ with tabs[1]:
                         if st.button("Prepare for Interview", key="prepare_interview_btn"):
                             st.session_state.active_tab = 2  # Store which tab to activate
                             st.rerun()
+
 
 # Tab 3: Interview Preparation
 with tabs[2]:

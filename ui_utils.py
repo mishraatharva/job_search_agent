@@ -1,5 +1,10 @@
 import streamlit as st
 from config import COLORS
+import json
+import pandas as pd
+from langchain_core.messages import ToolMessage
+
+
 
 def display_resume_analysis_summary(resume_data):
     """
@@ -248,6 +253,34 @@ def display_extracted_information(resume_data):
                 unsafe_allow_html=True
             )
 
+## Utility function for Analysis
+def extract_agent_output(response):
+
+    """Extract the final text output from a LangChain agent executor response."""
+    # from langchain.schema import AIMessage #line 256
+    # from langchain_core.messages import ToolMessage
+    # from langchain.schema import AIMessage, BaseMessage
+    from langchain_core.messages import AIMessage, ToolMessage
+
+
+    # Case 1: Modern LangChain agents — final output is in response["output"]
+    if isinstance(response, dict):
+        if "output" in response:
+            return response["output"]
+        if "messages" in response:
+            for msg in response["messages"]:
+                # Prefer AIMessage last output
+                if isinstance(msg, AIMessage):
+                    return msg.content
+                # If ToolMessage for our tool
+                if isinstance(msg, ToolMessage) or (
+                    isinstance(msg, dict) and msg.get("name") == "analyze_resume"
+                ):
+                    return msg["content"] if isinstance(msg, dict) else msg.content
+    # Fallback for simple cases
+    return str(response)
+
+
 def display_formatted_analysis(analysis):
     """
     Format and display the resume analysis in a structured way with improved visibility.
@@ -256,6 +289,22 @@ def display_formatted_analysis(analysis):
         analysis (str): The resume analysis text
     """
     if not analysis:
+        return
+    
+    # ✅ Handle dict input gracefully
+    if isinstance(analysis, dict):
+    # Extract inner text if wrapped in a dict
+        if "output" in analysis:
+            analysis_str = analysis["output"]
+        elif "content" in analysis:
+            analysis_str = analysis["content"]
+        else:
+            analysis_str = json.dumps(analysis, indent=2)
+    else:
+        analysis_str = str(analysis)
+
+    if any(x in analysis_str for x in ["**", "|", "---", "###"]):
+        st.markdown(analysis_str, unsafe_allow_html=True)
         return
     
     # Extract sections using typical patterns
@@ -268,7 +317,8 @@ def display_formatted_analysis(analysis):
     }
     
     current_section = None
-    lines = analysis.split('\n')
+    lines = analysis_str.split('\n')
+
     
     for line in lines:
         # Check if this line is a section header
@@ -300,6 +350,89 @@ def display_formatted_analysis(analysis):
                 font-size: 16px; line-height: 1.5;'>{content}</div>""", 
                 unsafe_allow_html=True
             )
+
+# def clean_jobs_result(response):
+#     print("------------------------------------------------------")
+#     print("inside clean_jobs_result")
+#     print("-------------------------------------------------------")
+#     parsed_results = []
+
+#     if isinstance(response, dict) and "messages" in response:
+#         for msg in response["messages"]:
+#             # Identify tool output messages (like analyze_resume)
+#             if isinstance(msg, ToolMessage) or (
+#                 isinstance(msg, dict) and msg.get("name") == "analyze_resume"
+#             ):
+#                 # Extract the content field correctly
+#                 content = msg["content"] if isinstance(msg, dict) else msg.content
+
+#                 try:
+#                     # Try to parse JSON string content
+#                     data = json.loads(content)
+                
+#                     # If it's a list of dicts → extend list
+#                     if isinstance(data, list):
+#                         parsed_results.extend(data)
+#                     # If it's a single dict → append directly
+#                     elif isinstance(data, dict):
+#                         parsed_results.append(data)
+#                     else:
+#                         print("⚠️ Skipped non-dict content:", type(data))
+#                 except json.JSONDecodeError:
+#                     print("❌ Could not parse JSON content:", content[:200])
+    
+#     if parsed_results:
+#         st.session_state.jobs = parsed_results
+#     else:
+#         st.write("No valid data found.")
+
+
+import json
+from typing import Any, Dict, List, Union
+
+def clean_jobs_result(response: Union[Dict, Any]) -> List[Dict]:
+    """
+    Extract job search results from a LangChain ReAct agent response.
+    
+    Works for responses containing 'messages' list with AIMessage and ToolMessage.
+    """
+    if not response:
+        return []
+    
+    # ✅ Case 1: Modern LangChain ReAct output with messages
+    if isinstance(response, dict) and "messages" in response:
+        for msg in response["messages"]:
+            # Tool message may be dict or class instance
+            if isinstance(msg, dict):
+                if msg.get("name") == "job_search_tool":
+                    try:
+                        return json.loads(msg["content"])
+                    except json.JSONDecodeError:
+                        return []
+                # If no name but content looks like JSON
+                if "content" in msg and isinstance(msg["content"], str) and msg["content"].startswith("["):
+                    try:
+                        return json.loads(msg["content"])
+                    except json.JSONDecodeError:
+                        continue
+            else:
+                # Handle LangChain message object (ToolMessage)
+                if hasattr(msg, "name") and msg.name == "job_search_tool":
+                    try:
+                        return json.loads(msg.content)
+                    except json.JSONDecodeError:
+                        return []
+    
+    # ✅ Case 2: Sometimes output stored directly
+    if isinstance(response, dict) and "output" in response:
+        try:
+            return json.loads(response["output"])
+        except:
+            pass
+    
+    # Fallback — no valid JSON found
+    return []
+
 
 
 def format_job_description(description):

@@ -6,9 +6,12 @@ from langchain.document_loaders import PyPDFLoader
 from langchain.vectorstores import FAISS
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.chains import RetrievalQA
+# from langchain.chains import RetrievalQA
 from langchain.llms import OpenAI
-from config import OPENAI_API_KEY
+from config import GROQ_API_KEY
+# from langchain_groq import ChatGroq
+from langchain_openai import ChatOpenAI
+
 
 # Load spaCy model
 try:
@@ -23,10 +26,12 @@ class ResumeParser:
     def __init__(self):
         """Initialize the parser with OpenAI components for RAG if API key is provided."""
         self.use_rag = False
-        if OPENAI_API_KEY:
+        if GROQ_API_KEY:
             try:
-                self.embeddings = OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY)
-                self.llm = OpenAI(api_key=OPENAI_API_KEY)
+                self.embeddings = OpenAIEmbeddings(openai_api_key=GROQ_API_KEY)
+                # self.llm = OpenAI(api_key=GROQ_API_KEY)
+                llm = ChatOpenAI(model="gpt-4")
+
                 self.use_rag = True
             except Exception as e:
                 print(f"Error initializing OpenAI components: {e}")

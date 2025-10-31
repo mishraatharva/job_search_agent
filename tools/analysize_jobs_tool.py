@@ -1,65 +1,26 @@
-from langchain.llms import OpenAI
-from utils.job_scraper import JobScraper
-from utils.serp_api_searcher import SerpApiSearcher
-from config import OPENAI_API_KEY, LLM_MODEL, JOB_PLATFORMS
+from pydantic import BaseModel, Field
+from langchain.tools import StructuredTool
+from config import GROQ_API_KEY, LLM_MODEL
+import streamlit as st
 
-class JobSearchAgent:
-    """Agent for searching and matching jobs."""
-    
-    def __init__(self):
-        """Initialize the job search agent."""
-        self.api_key = OPENAI_API_KEY
-        self.model = LLM_MODEL
-        self.job_scraper = JobScraper()
-        self.serp_api_searcher = SerpApiSearcher()
-    
-    def search_jobs(self, resume_data, keywords, location, platforms=None, count=5):
-        """
-        Search for jobs based on resume and keywords.
-        
-        Args:
-            resume_data (dict): The parsed resume data
-            keywords (str): Search keywords or job title
-            location (str): Job location
-            platforms (list): List of job platforms to search
-            count (int): Number of jobs per platform
-            
-        Returns:
-            list: List of job dictionaries
-        """
-        if not platforms:
-            platforms = JOB_PLATFORMS
-            
-        # Try the SerpAPI approach first (this will have real links)
-        api_jobs = []
-        
-        for platform in platforms:
-            # Use SerpAPI to search for real jobs
-            platform_jobs = self.serp_api_searcher.search_jobs(
-                keywords, 
-                location, 
-                platform=platform, 
-                count=count
-            )
-            api_jobs.extend(platform_jobs)
-        
-        # If we got results from SerpAPI, use those
-        if api_jobs:
-            return api_jobs
-        
-        # Fallback to the scraper if SerpAPI fails
-        print("SerpAPI search returned no results. Falling back to scraper.")
-        all_jobs = []
-        for platform in platforms:
-            platform_jobs = self.job_scraper.search_jobs(
-                keywords, 
-                location, 
-                platform=platform, 
-                count=count
-            )
-            all_jobs.extend(platform_jobs)
-        
-        return all_jobs
+class JobMatchInput(BaseModel):
+    resume_data: dict = Field(..., description="Parsed resume data as a dict")
+    job_data: dict = Field(..., description="Job description data as a dict")
+
+
+class JobAnalyzer:
+    def __init__(self,api_key):
+        self.api_key = api_key
+        self.llm = st.session_state.llm
+
+    def __call__(self, resume_data, job_data):
+        # You can replace this with your real logic
+        return {
+            "match_score": 82,
+            "key_matches": ["Python", "Data Analysis"],
+            "gaps": ["Cloud experience"],
+            "recommendations": ["Add AWS project examples"]
+        }
     
     def get_job_match_analysis(self, resume_data, job_data):
         """
@@ -77,7 +38,7 @@ class JobSearchAgent:
         
         try:
             # Initialize OpenAI client
-            client = OpenAI(api_key=self.api_key, model=self.model)
+            # client = OpenAI(api_key=self.api_key, model=self.model)
             
             # Extract relevant data
             skills = resume_data.get("skills", [])
@@ -125,7 +86,7 @@ class JobSearchAgent:
             """
             
             # Get analysis from OpenAI
-            response = client.create(
+            response = llm.create(
                 model=self.model,
                 prompt=prompt,
                 max_tokens=1000,
@@ -166,3 +127,13 @@ class JobSearchAgent:
                 "Add any missing skills that you possess but aren't in your resume"
             ]
         }
+    
+    
+def return_job_match_tool():
+    job_match_tool = StructuredTool.from_function(
+        func=JobAnalyzer(api_key=GROQ_API_KEY),
+        name="job_match_analysis",
+        description="Analyze how well a resume matches a given job description.",
+        args_schema=JobMatchInput
+    )
+    return job_match_tool
